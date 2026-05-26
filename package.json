@@ -1,0 +1,20 @@
+{
+  "name": "bet9ja-super15-prototype",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "serve": "node server.mjs",
+    "build": "vite build",
+    "preview": "vite preview",
+    "extract:data": "node scripts/extract-weeks.mjs"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "latest",
+    "vite": "latest",
+    "react": "latest",
+    "react-dom": "latest"
+  },
+  "devDependencies": {}
+}
