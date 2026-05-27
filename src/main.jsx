@@ -75,15 +75,17 @@ function App() {
     (selections[match.id] || []).length > 0
   )).length;
   const allSelected = selectedLines === activeWeek.matches.length;
-  const combinations = activeWeek.matches.reduce((total, match) => {
-    const count = (selections[match.id] || []).length;
-    return total * Math.max(1, count);
-  }, 1);
+  const totalSelections = activeWeek.matches.reduce((total, match) => {
+    return total + (selections[match.id] || []).length;
+  }, 0);
+  const extraSelections = allSelected ? Math.max(0, totalSelections - activeWeek.matches.length) : 0;
+  const combinations = 2 ** extraSelections;
   const stake = activeWeek.minimumStake * combinations;
   const result = useMemo(() => calculateResult(activeWeek, selections), [activeWeek, selections]);
   const slipProps = {
     allSelected,
     combinations,
+    extraSelections,
     selectedLines,
     stake,
     activeWeek,
@@ -358,6 +360,7 @@ function BetSlip(props) {
   const {
     allSelected,
     combinations,
+    extraSelections,
     selectedLines,
     stake,
     activeWeek,
@@ -377,6 +380,7 @@ function BetSlip(props) {
     h("div", { className: "slip-card" },
       h("div", { className: "slip-row" }, h("span", null, "Minimum"), h("strong", null, money(activeWeek.minimumStake))),
       h("div", { className: "slip-row" }, h("span", null, "Combinations"), h("strong", null, combinations.toLocaleString("en-NG"))),
+      h("div", { className: "slip-row" }, h("span", null, "Extra Picks"), h("strong", null, allSelected ? extraSelections.toLocaleString("en-NG") : "0")),
       h("div", { className: "slip-row total" }, h("span", null, "Stake"), h("strong", null, allSelected ? money(stake) : "Select 15")),
       settled && h("div", { className: result.correct >= 12 ? "slip-result won" : "slip-result" },
         h("span", null, `${result.correct} correct`),
@@ -516,16 +520,16 @@ function RulesPage() {
         "A valid ticket must contain at least one selection for all 15 matches.",
         "You may select more than one outcome on the same match. For example, 1/X covers both a home win and a draw.",
         "Selecting all three outcomes on one match covers 1, X, and 2 for that match.",
-        "Multiple selections increase the number of combinations on the ticket, and the stake increases accordingly.",
+        "After the required 15 picks are made, every additional pick doubles the ticket coverage and the stake.",
       ],
     },
     {
       title: "Stake Calculation",
       items: [
-        "The minimum stake is ₦100 for one straight 15-match combination.",
-        "The total stake is calculated as ₦100 multiplied by the total number of combinations.",
-        "Example: if one match has two selections and all other matches have one selection, the ticket has 2 combinations and costs ₦200.",
-        "Example: if two matches each have two selections, the ticket has 4 combinations and costs ₦400.",
+        "The minimum stake is ₦100 for one straight 15-match ticket.",
+        "Once all 15 matches have a pick, every extra pick doubles the stake.",
+        "Example: 15 picks cost ₦100, 16 picks cost ₦200, 17 picks cost ₦400, and 18 picks cost ₦800.",
+        "The stake shown in the bet slip updates automatically as extra picks are added or removed.",
       ],
     },
     {
