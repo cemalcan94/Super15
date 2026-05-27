@@ -414,16 +414,16 @@ function MatchRow({ match, index, selected, settled, toggleSelection }) {
 
 function QuickPickBar({ settled, onQuickPick }) {
   const modes = [
-    ["popular", "Populer"],
+    ["popular", "Popular"],
     ["ideal", "Ideal"],
-    ["surprise", "Supriz"],
-    ["random", "Rastgele"],
+    ["surprise", "Surprise"],
+    ["random", "Random"],
   ];
 
   return h("section", { className: "quick-picks", "aria-label": "Quick selections" },
     h("div", { className: "quick-title" },
       h("span", null, "?"),
-      h("strong", null, "Hizli Secim"),
+      h("strong", null, "Quick Pick"),
     ),
     h("div", { className: "quick-buttons" },
       modes.map(([mode, label]) => h("button", {
@@ -624,10 +624,10 @@ function RulesPage() {
     {
       title: "Quick Pick Modes",
       items: [
-        "Populer selects the highest-preference outcome on every match and creates a simple 15-pick ticket.",
+        "Popular selects the highest-preference outcome on every match and creates a simple 15-pick ticket.",
         "Ideal selects the highest-preference outcomes and adds limited double coverage on selected matches to improve ticket protection.",
-        "Supriz leans toward lower-preference outcomes and selected upset coverage for players who want a higher-risk ticket.",
-        "Rastgele creates a fresh random ticket and may add limited double coverage. The bet slip always shows the resulting stake before the ticket is placed.",
+        "Surprise leans toward lower-preference outcomes and selected upset coverage for players who want a higher-risk ticket.",
+        "Random creates a fresh random ticket and may add limited double coverage. The bet slip always shows the resulting stake before the ticket is placed.",
       ],
     },
     {
