@@ -489,6 +489,23 @@ h2 {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.pick-choice {
+  display: grid;
+  grid-template-rows: 24px 1fr;
+  min-width: 0;
+}
+
+.pick-rate {
+  align-items: center;
+  background: #20242b;
+  border-left: 1px solid #343945;
+  color: #9be47e;
+  display: flex;
+  font-size: 13px;
+  font-weight: 800;
+  justify-content: center;
+}
+
 .pick-btn {
   background: #0f8340;
   border: 0;
@@ -720,6 +737,55 @@ h2 {
   position: absolute;
   top: 8px;
   width: 7px;
+}
+
+.quick-picks {
+  align-items: center;
+  background: #d7e0e3;
+  color: #111;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: minmax(0, 1fr);
+  margin-top: 0;
+  padding: 12px 10px;
+}
+
+.quick-title {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.quick-title span {
+  align-items: center;
+  background: #2a6972;
+  border-radius: 50%;
+  color: var(--white);
+  display: inline-flex;
+  font-size: 16px;
+  font-weight: 900;
+  height: 28px;
+  justify-content: center;
+  width: 28px;
+}
+
+.quick-title strong {
+  font-size: 16px;
+}
+
+.quick-buttons {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.quick-buttons button {
+  background: var(--yellow);
+  border: 1px solid #d4ad00;
+  color: #111;
+  font-weight: 800;
+  min-height: 40px;
 }
 
 .betslip {
@@ -1062,4 +1128,205 @@ h2 {
   .past-match-row {
     grid-template-columns: 88px minmax(0, 1fr) 34px;
   }
+}
+
+/* Locked phone-size prototype frame for desktop and mobile viewing. */
+body {
+  align-items: flex-start;
+  display: flex;
+  justify-content: center;
+}
+
+#root {
+  background: var(--page);
+  min-height: 100vh;
+  overflow-x: hidden;
+  width: min(100vw, 430px);
+}
+
+@media (min-width: 480px) {
+  body {
+    padding: 18px 0;
+  }
+
+  #root {
+    border: 1px solid #2c313a;
+    border-radius: 24px;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
+    height: calc(100vh - 36px);
+    max-height: 932px;
+    min-height: 760px;
+    overflow-y: auto;
+  }
+}
+
+.app-shell {
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
+.header {
+  gap: 14px;
+  height: 74px;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0 12px;
+}
+
+.brand {
+  flex: 0 0 96px;
+}
+
+.brand img {
+  height: auto;
+  width: 96px;
+}
+
+.top-nav {
+  flex-wrap: nowrap;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.top-nav a {
+  flex: 0 0 auto;
+  font-size: 12px;
+}
+
+.auth-strip,
+.side-rail {
+  display: none;
+}
+
+.bet9ja-layout {
+  display: block;
+  min-width: 0;
+}
+
+.content-panel {
+  border-left: 0;
+  min-height: 0;
+  padding: 8px;
+}
+
+.top-strip {
+  overflow-x: auto;
+}
+
+.product-nav {
+  margin-top: 8px;
+}
+
+.product-nav button {
+  min-height: 54px;
+}
+
+.week-tabs {
+  margin-bottom: 10px;
+}
+
+.week-tabs button {
+  flex-basis: 100px;
+}
+
+.pool-header,
+.result-hero {
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.pool-header {
+  padding: 12px 10px;
+}
+
+.super15-logo {
+  max-height: 52px;
+  max-width: 230px;
+}
+
+.pool-stats strong {
+  font-size: 16px;
+}
+
+.board-head {
+  grid-template-columns: minmax(0, 1fr) 156px;
+  min-height: 48px;
+  padding: 0 10px;
+}
+
+.outcome-labels span {
+  font-size: 18px;
+}
+
+.match-row {
+  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) 156px;
+  min-height: 112px;
+  padding: 10px;
+}
+
+.match-info {
+  gap: 7px;
+}
+
+.league-name {
+  font-size: 12px;
+}
+
+.teams strong,
+.teams span {
+  font-size: 15px;
+}
+
+.match-time {
+  font-size: 12px;
+}
+
+.pick-rate {
+  font-size: 12px;
+}
+
+.pick-btn {
+  font-size: 16px;
+  min-height: 54px;
+}
+
+.quick-picks {
+  margin-bottom: 0;
+}
+
+.betslip {
+  margin-bottom: 8px;
+  margin-top: 0;
+  padding: 10px;
+}
+
+.weekly-row {
+  grid-template-columns: 70px 78px 1fr;
+}
+
+.weekly-row strong {
+  grid-column: 1 / 4;
+  text-align: left;
+}
+
+.settled-row {
+  grid-template-columns: 48px minmax(0, 1fr) 68px;
+}
+
+.settled-row b {
+  grid-column: 2 / 4;
+}
+
+.result-details summary {
+  grid-template-columns: 1fr 1fr;
+}
+
+.result-details summary strong {
+  grid-column: 1 / 3;
+  text-align: left;
+}
+
+.past-match-row {
+  grid-template-columns: 88px minmax(0, 1fr) 34px;
 }

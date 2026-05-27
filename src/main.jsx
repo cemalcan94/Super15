@@ -20,6 +20,41 @@ function orderSelections(values) {
   return [...values].sort((a, b) => OUTCOMES.indexOf(a) - OUTCOMES.indexOf(b));
 }
 
+function numericHash(value) {
+  return [...value].reduce((total, char) => total + char.charCodeAt(0), 0);
+}
+
+function preferenceRates(match, index) {
+  const seed = numericHash(`${match.id}-${match.home}-${match.away}-${index}`);
+  const favorite = OUTCOMES[seed % OUTCOMES.length];
+  const second = OUTCOMES[(seed + 1) % OUTCOMES.length];
+  const rates = {
+    "1": 18 + ((seed * 3) % 12),
+    X: 17 + ((seed * 5) % 11),
+    "2": 18 + ((seed * 7) % 12),
+  };
+
+  rates[favorite] = 44 + (seed % 18);
+  rates[second] += 6 + (seed % 7);
+
+  const total = OUTCOMES.reduce((sum, outcome) => sum + rates[outcome], 0);
+  const scaled = Object.fromEntries(OUTCOMES.map((outcome) => [
+    outcome,
+    Math.round((rates[outcome] / total) * 100),
+  ]));
+  const difference = 100 - OUTCOMES.reduce((sum, outcome) => sum + scaled[outcome], 0);
+  scaled[favorite] += difference;
+
+  return scaled;
+}
+
+function rankedOutcomes(match, index) {
+  const rates = preferenceRates(match, index);
+  return OUTCOMES
+    .map((outcome) => ({ outcome, rate: rates[outcome] }))
+    .sort((a, b) => b.rate - a.rate);
+}
+
 function emptySelections(week) {
   return Object.fromEntries(week.matches.map((match) => [match.id, []]));
 }
@@ -113,11 +148,26 @@ function App() {
   }
 
   function fillPattern() {
+    applyQuickPick("ideal");
+  }
+
+  function applyQuickPick(mode) {
     setSettled(false);
     setSelections(Object.fromEntries(activeWeek.matches.map((match, index) => {
-      const base = OUTCOMES[index % OUTCOMES.length];
-      const extra = index % 5 === 0 ? [base, "X"] : [base];
-      return [match.id, orderSelections([...new Set(extra)])];
+      const ranked = rankedOutcomes(match, index).map((item) => item.outcome);
+      if (mode === "popular") {
+        return [match.id, [ranked[0]]];
+      }
+      if (mode === "ideal") {
+        return [match.id, orderSelections(index % 5 === 1 ? ranked.slice(0, 2) : [ranked[0]])];
+      }
+      if (mode === "surprise") {
+        const lowest = ranked[2];
+        const second = ranked[1];
+        return [match.id, orderSelections(index % 5 === 2 ? [second, lowest] : [index % 3 === 0 ? lowest : second])];
+      }
+      const shuffled = [...OUTCOMES].sort(() => Math.random() - 0.5);
+      return [match.id, orderSelections(index % 6 === 0 ? shuffled.slice(0, 2) : [shuffled[0]])];
     })));
   }
 
@@ -168,6 +218,7 @@ function App() {
                 settled,
                 toggleSelection,
               }),
+              h(QuickPickBar, { settled, onQuickPick: applyQuickPick }),
               h("div", { className: "slip-after-matches" }, h(BetSlip, slipProps)),
             ),
       ),
@@ -314,6 +365,8 @@ function MatchBoard({ matches, selections, settled, toggleSelection }) {
 }
 
 function MatchRow({ match, index, selected, settled, toggleSelection }) {
+  const rates = preferenceRates(match, index);
+
   return h("article", {
     className: [
       "match-row",
@@ -343,15 +396,42 @@ function MatchRow({ match, index, selected, settled, toggleSelection }) {
           settled && isSelected && isActual ? "hit" : "",
           settled && isSelected && !isActual ? "miss" : "",
         ].join(" ");
-        return h("button", {
+        return h("div", { className: "pick-choice", key: outcome },
+          h("span", { className: "pick-rate" }, `%${rates[outcome]}`),
+          h("button", {
           key: outcome,
           type: "button",
           className,
           "aria-pressed": isSelected,
           title: outcome === "1" ? "Home" : outcome === "X" ? "Draw" : "Away",
           onClick: () => toggleSelection(match.id, outcome),
-        }, outcome);
+          }, outcome),
+        );
       }),
+    ),
+  );
+}
+
+function QuickPickBar({ settled, onQuickPick }) {
+  const modes = [
+    ["popular", "Populer"],
+    ["ideal", "Ideal"],
+    ["surprise", "Supriz"],
+    ["random", "Rastgele"],
+  ];
+
+  return h("section", { className: "quick-picks", "aria-label": "Quick selections" },
+    h("div", { className: "quick-title" },
+      h("span", null, "?"),
+      h("strong", null, "Hizli Secim"),
+    ),
+    h("div", { className: "quick-buttons" },
+      modes.map(([mode, label]) => h("button", {
+        key: mode,
+        type: "button",
+        disabled: settled,
+        onClick: () => onQuickPick(mode),
+      }, label)),
     ),
   );
 }
@@ -391,7 +471,7 @@ function BetSlip(props) {
       settled
         ? h("button", { type: "button", className: "primary", onClick: onEdit }, "Edit Bet")
         : h("button", { type: "button", className: "primary", disabled: !allSelected, onClick: onPlace }, "Place Bet"),
-      h("button", { type: "button", onClick: onPattern, disabled: settled }, "Auto Pick"),
+      h("button", { type: "button", onClick: onPattern, disabled: settled }, "Ideal Pick"),
       h("button", { type: "button", onClick: onClear }, "Clear"),
     ),
     h("div", { className: "slip-note" },
@@ -533,12 +613,31 @@ function RulesPage() {
       ],
     },
     {
+      title: "Preference Percentages",
+      items: [
+        "Each 1, X, and 2 button shows a preference percentage above the selection button.",
+        "The percentage represents the prototype crowd preference for that outcome on the selected match.",
+        "These percentages are used by the quick-pick tools to decide which outcomes are popular, balanced, or surprising.",
+        "Preference percentages are informational only. They do not change the official result, prize tier, or settlement logic.",
+      ],
+    },
+    {
+      title: "Quick Pick Modes",
+      items: [
+        "Populer selects the highest-preference outcome on every match and creates a simple 15-pick ticket.",
+        "Ideal selects the highest-preference outcomes and adds limited double coverage on selected matches to improve ticket protection.",
+        "Supriz leans toward lower-preference outcomes and selected upset coverage for players who want a higher-risk ticket.",
+        "Rastgele creates a fresh random ticket and may add limited double coverage. The bet slip always shows the resulting stake before the ticket is placed.",
+      ],
+    },
+    {
       title: "Winning Tiers",
       items: [
         "Only tickets with 12, 13, 14, or 15 correct predictions qualify for a prize.",
         "Tickets with 11 or fewer correct predictions do not receive a prize.",
         "The weekly prize pool is split across the winning tiers: 45% for 15 correct, 25% for 14 correct, 18% for 13 correct, and 12% for 12 correct.",
         "If more than one user wins in the same tier, that tier's prize amount is shared equally between all winners in that tier.",
+        "If a winning tier has no winners in a future production version, that tier can be configured to roll over according to the operator's pool rules.",
       ],
     },
     {
@@ -548,6 +647,7 @@ function RulesPage() {
         "The results page shows the official score, your selected outcomes, whether each match was won or lost, your total correct picks, and any prize won.",
         "The Results tab lists previous weekly outcomes, the number of winners in each tier, the shared prize amount, and masked winner IDs.",
         "Winner IDs are displayed with only the last three digits visible for privacy.",
+        "Bet Again returns the player to the same Super15 betting flow and clears the previous ticket.",
       ],
     },
     {
